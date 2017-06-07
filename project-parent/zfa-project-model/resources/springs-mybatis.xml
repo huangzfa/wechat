@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd  
+                        http://www.springframework.org/schema/context  
+                        http://www.springframework.org/schema/context/spring-context-4.0.xsd  
+                        http://www.springframework.org/schema/mvc  
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+<!-- 引入jdbc配置文件 -->    
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+            <property name="location"> 
+               <value>classpath:jdbc.properties</value>  
+                <!--要是有多个配置文件，只需在这里继续添加即可 -->  
+            </property>      
+    </bean>  
+    
+	<!-- 定义受环境影响易变的变量 -->
+	<context:property-placeholder location="classpath*:application.properties"
+		ignore-unresolvable="true" order="1" />
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${jdbc.driver}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.user}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialPoolSize" value="${jdbc.initialPoolSize}" />
+		<property name="minPoolSize" value="${jdbc.minPoolSize}" />
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}" />
+		<property name="maxIdleTime" value="${jdbc.maxIdleTime}" />
+		<property name="acquireIncrement" value="${jdbc.acquireIncrement}" />
+		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts}" />
+		<property name="maxStatements" value="${jdbc.maxStatements}" />
+		<property name="idleConnectionTestPeriod" value="${jdbc.idleConnectionTestPeriod}" />
+	</bean>
+	<!-- 配置jdbcTransactionManager -->
+	<bean id="jdbcTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+    <!-- 配置Mybatis的文件 ，mapperLocations配置**Mapper.xml文件位置，configLocation配置mybatis-config文件位置-->  
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />  
+        <property name="mapperLocations" value="classpath:com/ssm/mapping/*.xml"/>    
+        <property name="configLocation" value="classpath:/mybatis-config.xml" />  
+    </bean>  
+
+    <!-- 自动扫描了所有的XxxxMapper.xml对应的mapper接口文件，这样就不用一个一个手动配置Mpper的映射了，只要Mapper接口类和Mapper映射文件对应起来就可以了。 -->  
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+        <property name="basePackage"  
+            value="com.ssm.dao" />  
+    </bean>  
+    <!-- 自动扫描注解的bean -->  
+    <context:component-scan base-package="com.ssm.service" />
+    <context:component-scan base-package="com.ssm.dao" />    
+ </beans>
